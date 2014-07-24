@@ -141,7 +141,7 @@
                 "description" : "Visualise Point Data as a Google Heat Map",
 		// **external_scripts** : Any external scripts that should be loaded before the plugin instance is created.
 		"external_scripts": [
-			"/freeboard/js/plugins/aqhm.js"
+			"/freeboard/js/freeboard/plugins/aqhm.js"
 		],
 		// **fill_size** : If this is set to true, the widget will fill be allowed to fill the entire space given it, otherwise it will contain an automatic padding of around 10 pixels around it.
 		"fill_size" : false,
@@ -190,54 +190,94 @@
 		var self = this;
 		var currentSettings = settings;
 
-		// Here we create an element to hold the text we're going to display. We're going to set the value displayed in it below.
-		var myTextElement = $("<span>Air Quality</span>");
+                // Adding Test Data Points
+                var map, pointarray, heatmap;
+
 
 		// **render(containerElement)** (required) : A public function we must implement that will be called when freeboard wants us to render the contents of our widget. The container element is the DIV that will surround the widget.
-		self.render = function(containerElement)
+		this.render = function(containerElement)
 		{
-			// Here we append our text element to the widget container element.
-			$(containerElement).append(myTextElement);
-		}
+                  function initializeMap() {
+
+                        var point_data = [
+                          new google.maps.LatLng(37.782551, -122.445368),
+                          new google.maps.LatLng(37.782745, -122.444586),
+                          new google.maps.LatLng(37.782842, -122.443688),
+                          new google.maps.LatLng(37.782919, -122.442815),
+                          new google.maps.LatLng(37.782992, -122.442112),
+                          new google.maps.LatLng(37.783100, -122.441461) ];
+
+                        var mapOptions = {
+                            zoom: 13,
+                            center: new google.maps.LatLng(37.774546, -122.433523),
+                            disableDefaultUI: true,
+                            draggable: false,
+                            mapTypeId: google.maps.MapTypeId.SATELLITE
+                          };
+
+                        map = new google.maps.Map(containerElement, mapOptions);
+
+                        var pointArray = new google.maps.MVCArray(point_data);
+
+                        heatmap = new google.maps.visualization.HeatmapLayer({
+                          data: pointArray
+                        });
+
+                        heatmap.setMap(map);
+
+                        google.maps.event.addDomListener(containerElement, 'mouseenter', function (e) {
+                            e.cancelBubble = true;
+                            if (!map.hover) {
+                                map.hover = true;
+                                map.setOptions({zoomControl: true});
+                            }
+                        });
+
+                        google.maps.event.addDomListener(containerElement, 'mouseleave', function (e) {
+                            if (map.hover) {
+                                map.setOptions({zoomControl: false});
+                                map.hover = false;
+                            }
+                        });
+		  }
+
+                  if (window.google && window.google.maps) {
+                    initializeMap();
+                  }
+                  else {
+                      window.gmap_initialize = initializeMap;
+                      head.js("https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=gmap_initialize&libraries=visualization");
+                  }
+
+                }
 
 		// **getHeight()** (required) : A public function we must implement that will be called when freeboard wants to know how big we expect to be when we render, and returns a height. This function will be called any time a user updates their settings (including the first time they create the widget).
 		//
 		// Note here that the height is not in pixels, but in blocks. A block in freeboard is currently defined as a rectangle that is fixed at 300 pixels wide and around 45 pixels multiplied by the value you return here.
 		//
 		// Blocks of different sizes may be supported in the future.
-		self.getHeight = function()
-		{
-			if(currentSettings.size == "big")
-			{
-				return 2;
-			}
-			else
-			{
-				return 1;
-			}
+		this.getHeight = function() {
+			return 4;
 		}
 
 		// **onSettingsChanged(newSettings)** (required) : A public function we must implement that will be called when a user makes a change to the settings.
-		self.onSettingsChanged = function(newSettings)
+		this.onSettingsChanged = function(newSettings)
 		{
 			// Normally we'd update our text element with the value we defined in the user settings above (the_text), but there is a special case for settings that are of type **"calculated"** -- see below.
 			currentSettings = newSettings;
 		}
 
 		// **onCalculatedValueChanged(settingName, newValue)** (required) : A public function we must implement that will be called when a calculated value changes. Since calculated values can change at any time (like when a datasource is updated) we handle them in a special callback function here.
-		self.onCalculatedValueChanged = function(settingName, newValue)
+		this.onCalculatedValueChanged = function(settingName, newValue)
 		{
-			// Remember we defined "the_text" up above in our settings.
-			if(settingName == "the_text")
-			{
-				// Here we do the actual update of the value that's displayed in on the screen.
-				$(myTextElement).html(newValue);
-			}
 		}
 
 		// **onDispose()** (required) : Same as with datasource plugins.
-		self.onDispose = function()
+		this.onDispose = function()
 		{
 		}
-	}
+
+                this.onSettingsChanged(settings);
+	};
+
 }());
