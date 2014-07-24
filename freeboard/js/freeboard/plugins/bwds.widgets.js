@@ -208,8 +208,8 @@
                           new google.maps.LatLng(37.783100, -122.441461) ];
 
                         var mapOptions = {
-                            zoom: 13,
-                            center: new google.maps.LatLng(37.774546, -122.433523),
+                            zoom: 14,
+                            center: new google.maps.LatLng(37.782842, -122.443523),
                             disableDefaultUI: true,
                             draggable: false,
                             mapTypeId: google.maps.MapTypeId.SATELLITE
