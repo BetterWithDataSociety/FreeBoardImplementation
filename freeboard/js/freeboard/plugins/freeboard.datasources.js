@@ -152,8 +152,9 @@
 
 		this.updateNow = function()
 		{
+                        // See http://openweathermap.org/current
 			$.ajax({
-				url       : "http://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(currentSettings.location) + "&units=" + currentSettings.units,
+				url       : "https://apps.opensheffield.org/openweathermap/2.5/weather?q=" + encodeURIComponent(currentSettings.location) + "&units=" + currentSettings.units,
 				dataType  : "JSONP",
 				success   : function(data)
 				{
